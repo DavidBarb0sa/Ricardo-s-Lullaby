@@ -303,6 +303,7 @@ public class FirstPersonController : MonoBehaviour
             if(isSprintCooldown)
             {
                 sprintCooldown -= 1 * Time.deltaTime;
+                sprintBarCG.alpha = .5f;
                 if (sprintCooldown <= 0)
                 {
                     isSprintCooldown = false;
