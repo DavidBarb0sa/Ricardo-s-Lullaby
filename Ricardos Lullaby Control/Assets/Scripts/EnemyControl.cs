@@ -10,7 +10,6 @@ public class EnemyControl : MonoBehaviour
 
     [Header("Deteção")]
     public float detectionRange = 15f;
-    public float playerFOVAngle = 90f;
     public float resumeCooldown = 3f;
     public LayerMask obstacleLayers;
 
@@ -80,12 +79,23 @@ public class EnemyControl : MonoBehaviour
 
     bool PlayerIsLooking()
     {
-        Vector3 toEnemy = transform.position - playerCamera.position;
-        float angle = Vector3.Angle(playerCamera.forward, toEnemy);
-        if (angle > playerFOVAngle * 0.5f) return false;
+        Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
 
+        // Está à frente da câmara?
+        if (viewportPos.z < 0)
+            return false;
+
+        // Está dentro do ecrã? (com margem opcional)
+        float margin = 0.3f; // aumenta isto para ser mais "generoso"
+        if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
+            viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
+            return false;
+
+        // Verificar se há obstáculos
         if (Physics.Linecast(playerCamera.position,
-                             transform.position + Vector3.up, obstacleLayers)) return false;
+                            transform.position + Vector3.up,
+                            obstacleLayers))
+            return false;
 
         return true;
     }
@@ -102,12 +112,5 @@ public class EnemyControl : MonoBehaviour
         // Linha entre inimigo e câmara
         Gizmos.color = isFrozen ? Color.cyan : Color.red;
         Gizmos.DrawLine(transform.position + Vector3.up, playerCamera.position);
-
-        // FOV do jogador
-        Gizmos.color = new Color(0f, 1f, 0f, 0.3f);
-        Vector3 left  = Quaternion.Euler(0, -playerFOVAngle * 0.5f, 0) * playerCamera.forward;
-        Vector3 right = Quaternion.Euler(0,  playerFOVAngle * 0.5f, 0) * playerCamera.forward;
-        Gizmos.DrawRay(playerCamera.position, left  * detectionRange);
-        Gizmos.DrawRay(playerCamera.position, right * detectionRange);
     }
 }
