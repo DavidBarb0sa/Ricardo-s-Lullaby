@@ -16,6 +16,7 @@ public class EnemyControl : MonoBehaviour
     private NavMeshAgent agent;
     private float cooldownTimer;
     private bool isFrozen;
+    
 
     void Start()
     {
@@ -77,28 +78,35 @@ public class EnemyControl : MonoBehaviour
         }
     }
 
-    bool PlayerIsLooking()
-    {
-        Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
+bool PlayerIsLooking()
+{
+    Camera cam = playerCamera.GetComponent<Camera>();
 
-        // Está à frente da câmara?
-        if (viewportPos.z < 0)
-            return false;
+    // 👉 Ponto real do inimigo (centro do corpo)
+    Collider col = GetComponent<Collider>();
+    Vector3 targetPoint = col.bounds.center;
 
-        // Está dentro do ecrã? (com margem opcional)
-        float margin = 0.3f; // aumenta isto para ser mais "generoso"
-        if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
-            viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
-            return false;
+    Vector3 viewportPos = cam.WorldToViewportPoint(targetPoint);
 
-        // Verificar se há obstáculos
-        if (Physics.Linecast(playerCamera.position,
-                            transform.position + Vector3.up,
-                            obstacleLayers))
-            return false;
+    // Está à frente da câmara?
+    if (viewportPos.z < 0)
+        return false;
 
-        return true;
-    }
+    float margin = 0f;
+
+    // Está dentro do ecrã?
+    if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
+        viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
+        return false;
+
+    // 👉 Verificação de obstáculos (AGORA correta)
+    if (Physics.Linecast(playerCamera.position,
+                         targetPoint,
+                         obstacleLayers))
+        return false;
+
+    return true;
+}
 
     // Gizmos para debug na Scene View
     void OnDrawGizmosSelected()
@@ -112,5 +120,6 @@ public class EnemyControl : MonoBehaviour
         // Linha entre inimigo e câmara
         Gizmos.color = isFrozen ? Color.cyan : Color.red;
         Gizmos.DrawLine(transform.position + Vector3.up, playerCamera.position);
+
     }
 }
