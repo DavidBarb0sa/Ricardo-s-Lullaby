@@ -27,30 +27,23 @@ public class PlayerInteract : MonoBehaviour
     {
         Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
         RaycastHit hit;
-        
+bool isLookingAtPickup = false;
 
+if (Physics.Raycast(ray, out hit, interactDistance))
+{
+    if (hit.collider.CompareTag("Pickup"))
+    {
+        isLookingAtPickup = true;
 
-         if (Physics.Raycast(ray, out hit, interactDistance))
+        if (Input.GetKeyDown(interactKey))
         {
-            if (hit.collider.CompareTag("Pickup"))
-            {
-                pickupText.gameObject.SetActive(true); // mostra o texto
+            PickUp(hit.collider.gameObject);
+            isLookingAtPickup = false;
+        }
+    }
+}
 
-                if (Input.GetKeyDown(interactKey))
-                {
-                    PickUp(hit.collider.gameObject);
-                    pickupText.gameObject.SetActive(false); // esconde ao pegar
-                }
-            }
-            else
-            {
-                pickupText.gameObject.SetActive(false); // esconde se não é pickup
-            }
-        }
-        else
-        {
-            pickupText.gameObject.SetActive(false); // esconde se nao acerta em nada
-        }
+pickupText.gameObject.SetActive(isLookingAtPickup);
     }
 
 void PickUp(GameObject obj)
