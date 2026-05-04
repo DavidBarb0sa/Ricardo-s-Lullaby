@@ -10,12 +10,20 @@ public class EnemyControl : MonoBehaviour
 
     [Header("Deteção")]
     public float detectionRange = 15f;
+
     public float resumeCooldown = 3f;
     public LayerMask obstacleLayers;
 
     private NavMeshAgent agent;
     private float cooldownTimer;
     private bool isFrozen;
+
+    [Header("Game Over")]
+    public GameObject gameOverScreen;
+    public float killTime = 5f;
+
+    private float touchTimer = 0f;
+    private bool isTouchingPlayer = false;
     
 
     void Start()
@@ -52,6 +60,7 @@ public class EnemyControl : MonoBehaviour
     {
         if (player == null || playerCamera == null) return;
 
+
         if (PlayerIsLooking())
         {
             // Para imediatamente
@@ -76,32 +85,26 @@ public class EnemyControl : MonoBehaviour
                 agent.SetDestination(player.position);
             }
         }
+        HandleGameOver();
     }
 
-bool PlayerIsLooking()
+ bool PlayerIsLooking()
 {
-    Camera cam = playerCamera.GetComponent<Camera>();
+    Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
 
-    // 👉 Ponto real do inimigo (centro do corpo)
-    Collider col = GetComponent<Collider>();
-    Vector3 targetPoint = col.bounds.center;
-
-    Vector3 viewportPos = cam.WorldToViewportPoint(targetPoint);
-
-    // Está à frente da câmara?
+    // verifica se esta a frente da camera
     if (viewportPos.z < 0)
         return false;
 
-    float margin = 0f;
-
-    // Está dentro do ecrã?
+    // margem de erro
+    float margin = 0f; // aumentar margem
     if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
         viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
         return false;
 
-    // 👉 Verificação de obstáculos (AGORA correta)
+    // Verificar se há obstáculos
     if (Physics.Linecast(playerCamera.position,
-                         targetPoint,
+                         transform.position + Vector3.up,
                          obstacleLayers))
         return false;
 
@@ -122,4 +125,41 @@ bool PlayerIsLooking()
         Gizmos.DrawLine(transform.position + Vector3.up, playerCamera.position);
 
     }
+
+    void OnCollisionStay(Collision collision)
+{
+    if (collision.gameObject.CompareTag("Player"))
+    {
+        isTouchingPlayer = true;
+    }
 }
+
+void OnCollisionExit(Collision collision)
+{
+    if (collision.gameObject.CompareTag("Player"))
+    {
+        isTouchingPlayer = false;
+        touchTimer = 0f; // reset se sair
+    }
+}
+
+void HandleGameOver()
+{
+    if (isTouchingPlayer)
+    {
+        touchTimer += Time.deltaTime;
+
+        if (touchTimer >= killTime)
+        {
+            GameOver();
+        }
+    }
+}
+
+void GameOver()
+{
+    gameOverScreen.SetActive(true);
+    Time.timeScale = 0f;
+}
+}
+
