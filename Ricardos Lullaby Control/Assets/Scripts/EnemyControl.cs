@@ -12,6 +12,7 @@ public class EnemyControl : MonoBehaviour
     public float detectionRange = 15f;
 
     public float resumeCooldown = 3f;
+    public float maxFreezeDistance = 13f;
     public LayerMask obstacleLayers;
 
     private NavMeshAgent agent;
@@ -58,10 +59,11 @@ public class EnemyControl : MonoBehaviour
 
     void Update()
     {
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         if (player == null || playerCamera == null) return;
 
 
-        if (PlayerIsLooking())
+        if (PlayerIsLooking() && distanceToPlayer <= maxFreezeDistance)
         {
             // Para imediatamente
             agent.isStopped = true;
