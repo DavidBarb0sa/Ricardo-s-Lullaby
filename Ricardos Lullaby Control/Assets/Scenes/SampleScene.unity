@@ -4581,6 +4581,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 221920415158368436, guid: 8f9203c17c6c24e4b8b83722c6cb2c21, type: 3}
+--- !u!1 &122286531 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7417679000383318352, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
+  m_PrefabInstance: {fileID: 2942689374576593586}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &125161553 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 241474709666823026, guid: 8f9203c17c6c24e4b8b83722c6cb2c21, type: 3}
@@ -41034,6 +41039,21 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1130930043868263548, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
   m_PrefabInstance: {fileID: 2942689374576593586}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &534567272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 122286531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a229eea44fa81e4b80acc1f4e6dd3cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  Enemy: {fileID: 1118420627}
+  spawnMaxRadius: 40
+  spawnMinRadius: 30
 --- !u!1 &538122328 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6910624667090832393, guid: 8f9203c17c6c24e4b8b83722c6cb2c21, type: 3}
@@ -118813,6 +118833,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1998621963}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7417679000383318352, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 534567272}
     - targetCorrespondingSourceObject: {fileID: 6705825635559855379, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2036135884}
