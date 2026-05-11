@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -83,14 +84,23 @@ public class EnemyControl : MonoBehaviour
             // Persegue o jogador
             if (Vector3.Distance(transform.position, player.position) <= detectionRange)
             {
+
                 agent.isStopped = false;
                 agent.SetDestination(player.position);
+
+                if (Random.Range(0f, 1f) < 0.0005f) // Pequena chance de emitir um som
+                {
+                    gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                this.gameObject.SetActive(false); // Desativa o inimigo se o jogador estiver fora do alcance
             }
         }
         HandleGameOver();
     }
-
- bool PlayerIsLooking()
+    bool PlayerIsLooking()
 {
     Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
 
@@ -126,9 +136,11 @@ public class EnemyControl : MonoBehaviour
         Gizmos.color = isFrozen ? Color.cyan : Color.red;
         Gizmos.DrawLine(transform.position + Vector3.up, playerCamera.position);
 
+        
+
     }
 
-    void OnCollisionStay(Collision collision)
+    void OnTriggerStay(Collider collision)
 {
     if (collision.gameObject.CompareTag("Player"))
     {
@@ -136,7 +148,7 @@ public class EnemyControl : MonoBehaviour
     }
 }
 
-void OnCollisionExit(Collision collision)
+void OnTriggerExit(Collider collision)
 {
     if (collision.gameObject.CompareTag("Player"))
     {
