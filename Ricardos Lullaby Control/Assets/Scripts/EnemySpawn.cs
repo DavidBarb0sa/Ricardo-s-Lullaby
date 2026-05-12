@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Threading;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,19 +11,27 @@ public class EnemySpawn : MonoBehaviour
     public float spawnMaxRadius = 40f;
     public float spawnMinRadius = 30f;
 
+    public float minTimeDisappear = 15f;
+
+    float disappearTimer = 0f; //Tempo desde a ultima vez que desapareceu
+
     void Start()
     {
         if (Enemy == null)
         {
             Debug.LogWarning("[EnemyAI] Inimigo não encontrado!");
         }
+
+        
     }
 
     void Update()
     {
-        if (!Enemy.activeSelf && Random.Range(0f, 1f) < 0.005f)
+        disappearTimer += Time.deltaTime;
+        if ((!Enemy.activeSelf && Random.Range(0f, 1f) < 0.005f) && disappearTimer > minTimeDisappear)
         {
             SpawnEnemy();
+            disappearTimer = 0f;
         }
     }
 
