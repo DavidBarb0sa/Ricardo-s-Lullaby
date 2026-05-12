@@ -16,6 +16,8 @@ public class EnemyControl : MonoBehaviour
     public float maxFreezeDistance = 13f;
     public LayerMask obstacleLayers;
 
+    public float minTimeSpawn = 20f;
+
     private NavMeshAgent agent;
     private float cooldownTimer;
     private bool isFrozen;
@@ -26,6 +28,8 @@ public class EnemyControl : MonoBehaviour
 
     private float touchTimer = 0f;
     private bool isTouchingPlayer = false;
+
+    private float spawnTimer = 0f; //Tempo desde a ultima vez que apareceu
     
 
     void Start()
@@ -64,7 +68,7 @@ public class EnemyControl : MonoBehaviour
         if (player == null || playerCamera == null) return;
 
 
-        if (PlayerIsLooking() && distanceToPlayer <= maxFreezeDistance)
+        if ((PlayerIsLooking() && distanceToPlayer <= maxFreezeDistance))
         {
             // Para imediatamente
             agent.isStopped = true;
@@ -81,6 +85,8 @@ public class EnemyControl : MonoBehaviour
         }
         else
         {
+            spawnTimer += Time.deltaTime; //Só conta o tempo de spawn quando está a andar
+            
             // Persegue o jogador
             if (Vector3.Distance(transform.position, player.position) <= detectionRange)
             {
@@ -88,7 +94,7 @@ public class EnemyControl : MonoBehaviour
                 agent.isStopped = false;
                 agent.SetDestination(player.position);
 
-                if (Random.Range(0f, 1f) < 0.0005f) // Pequena chance de emitir um som
+                if (Random.Range(0f, 1f) < 0.0005f && spawnTimer >= minTimeSpawn)
                 {
                     gameObject.SetActive(false);
                 }
