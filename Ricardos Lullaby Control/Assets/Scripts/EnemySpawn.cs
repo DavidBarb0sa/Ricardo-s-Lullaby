@@ -1,30 +1,60 @@
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemySpawn : MonoBehaviour
 {
     public GameObject Enemy;
+
     public float spawnMaxRadius = 40f;
     public float spawnMinRadius = 30f;
+
     void Start()
     {
         if (Enemy == null)
-            Debug.LogWarning("[EnemyAI] Inimigo não encontrado! Certifica-te de que o objeto está atribuído no Inspector.");
+        {
+            Debug.LogWarning("[EnemyAI] Inimigo não encontrado!");
+        }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (Enemy.active == false && Random.Range(0f, 1f) < 0.005f)
+        if (!Enemy.activeSelf && Random.Range(0f, 1f) < 0.005f)
         {
-            Enemy.SetActive(true);
+            SpawnEnemy();
         }
+    }
+
+    void SpawnEnemy()
+    {
+        for (int i = 0; i < 20; i++) // tenta várias vezes
+        {
+            // Direção aleatória
+            Vector2 randomCircle = Random.insideUnitCircle.normalized;
+
+            // Distância aleatória entre min e max
+            float randomDistance = Random.Range(spawnMinRadius, spawnMaxRadius);
+
+            // Posição candidata
+            Vector3 randomPos = transform.position +
+                                new Vector3(randomCircle.x, 0, randomCircle.y) * randomDistance;
+
+            // Procura ponto válido na NavMesh
+            if (NavMesh.SamplePosition(randomPos, out NavMeshHit hit, 10f, NavMesh.AllAreas))
+            {
+                Enemy.transform.position = hit.position;
+                Enemy.SetActive(true);
+                return;
+            }
+        }
+
+        Debug.LogWarning("Não foi encontrada posição válida na NavMesh.");
     }
 
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, spawnMaxRadius);
+
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, spawnMinRadius);
     }
