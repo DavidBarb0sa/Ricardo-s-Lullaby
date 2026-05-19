@@ -21,6 +21,7 @@ public class EnemyControl : MonoBehaviour
     private NavMeshAgent agent;
     private float cooldownTimer;
     private bool isFrozen;
+    private bool isDistracted = false;
 
     [Header("Game Over")]
     public GameObject gameOverScreen;
@@ -92,6 +93,8 @@ public class EnemyControl : MonoBehaviour
             {
 
                 agent.isStopped = false;
+                
+                if (!isDistracted)
                 agent.SetDestination(player.position);
 
                 if (Random.Range(0f, 1f) < 0.0005f && spawnTimer >= minTimeSpawn)
@@ -181,5 +184,20 @@ void GameOver()
     gameOverScreen.SetActive(true);
     Time.timeScale = 0f;
 }
+
+    public void GoToPosition(Vector3 position)
+    {
+        isFrozen = false;
+        cooldownTimer = 0f;
+        isDistracted = true;
+        agent.isStopped = false;
+        agent.SetDestination(position);
+    }
+ 
+    public void ResumeChasing()
+    {
+        isDistracted = false;
+        cooldownTimer = 0f;
+    }
 }
 
