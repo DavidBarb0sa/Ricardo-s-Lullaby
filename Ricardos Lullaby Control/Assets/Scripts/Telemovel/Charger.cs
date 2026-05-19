@@ -16,6 +16,10 @@ public class Charger : MonoBehaviour
     private bool hasBeenUsed = false;
     private float chargeTimer = 0f;
 
+    private float cooldown = 30f;
+    private float cooldownTimer = 0f;
+    private bool onCooldown = false;
+
     void Start()
     {
         player = GameObject.FindWithTag("Player").transform;
@@ -25,7 +29,19 @@ public class Charger : MonoBehaviour
 
     void Update()
     {
-        if (hasBeenUsed) return;
+        if (onCooldown)
+{
+    cooldownTimer -= Time.deltaTime;
+
+    if (cooldownTimer <= 0f)
+    {
+        onCooldown = false;
+        GetComponent<Renderer>().material.color = Color.white; // volta à cor normal
+        if (promptText != null)
+            promptText.gameObject.SetActive(false);
+    }
+    return;
+}
 
         float distance = Vector3.Distance(transform.position, player.position);
         bool isNear = distance <= interactDistance;
@@ -69,20 +85,17 @@ public class Charger : MonoBehaviour
         isCharging = true;
         chargeTimer = 0f;
     }
+    
 
-    void FinishCharging()
-    {
-        BatteryManager.Instance.AddBattery(chargeAmount);
-        isCharging = false;
-        hasBeenUsed = true;
+  void FinishCharging()
+{
+    BatteryManager.Instance.AddBattery(chargeAmount);
+    isCharging = false;
+    onCooldown = true;
+    cooldownTimer = cooldown;
 
-        if (promptText != null)
-            promptText.gameObject.SetActive(false);
-
-        // Muda a cor da tomada para indicar que foi usada
-        GetComponent<Renderer>().material.color = Color.gray;
-    }
-
+    GetComponent<Renderer>().material.color = Color.gray;
+}
     void CancelCharging()
     {
         isCharging = false;
@@ -91,4 +104,5 @@ public class Charger : MonoBehaviour
         if (promptText != null)
             promptText.text = "Prima E para carregar";
     }
+    
 }
