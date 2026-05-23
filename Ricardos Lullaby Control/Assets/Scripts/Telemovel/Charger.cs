@@ -22,7 +22,7 @@ public class Charger : MonoBehaviour
     // NOVIDADE: Variável partilhada por todas as tomadas para saber quem controla a UI
     private static Charger activeCharger = null;
 
-    void Start()
+    void Awake ()
     {
         player = GameObject.FindWithTag("Player").transform;
         

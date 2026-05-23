@@ -25,6 +25,8 @@ public class PlayerInteract : MonoBehaviour
 
     void TryPickUp()
     {
+        if (Camera.main == null) return;
+        
         Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
         RaycastHit hit;
 bool isLookingAtPickup = false;
