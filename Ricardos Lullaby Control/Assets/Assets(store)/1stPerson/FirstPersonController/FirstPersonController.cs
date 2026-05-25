@@ -133,9 +133,11 @@ public class FirstPersonController : MonoBehaviour
     #region Footstep Audio
 
     [Header("Configurações de Áudio dos Passos")]
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip[] clipsDePasso; // Array para colocar vários sons de passos e variar
-    [SerializeField] private float intervaloEntrePassos = 0.5f; // Tempo em segundos entre cada passo
+    public bool enableFootstepAudio = true;
+    public AudioSource audioSource;
+    public float velocidadeAoAndar = 1.0f;  // Velocidade normal do áudio
+    public float velocidadeAoCorrer = 1.4f; // Áudio acelerado (ex: 40% mais rápido)
+    public float velocidadeSuavePitch = 5f;  // Suavidade na transição entre andar e correr
     
     #endregion
 
@@ -196,6 +198,9 @@ public class FirstPersonController : MonoBehaviour
             {
                 sprintBarCG.alpha = 0;
             }
+
+            if (audioSource == null) 
+            audioSource = GetComponentInChildren<AudioSource>();
         }
         else
         {
@@ -387,19 +392,21 @@ public class FirstPersonController : MonoBehaviour
             if (targetVelocity.x != 0 || targetVelocity.z != 0 && isGrounded)
             {
                 isWalking = true;
+                TocarSomDePassos(true, false);
             }
             else
             {
                 isWalking = false;
+                TocarSomDePassos(false, false);
             }
-
+            Vector3 velocity = rb.linearVelocity;
             // All movement calculations shile sprint is active
             if (enableSprint && Input.GetKey(sprintKey) && sprintRemaining > 0f && !isSprintCooldown)
             {
                 targetVelocity = transform.TransformDirection(targetVelocity) * sprintSpeed;
 
                 // Apply a force that attempts to reach our target velocity
-                Vector3 velocity = rb.linearVelocity;
+                
                 Vector3 velocityChange = (targetVelocity - velocity);
                 velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
                 velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
@@ -410,6 +417,7 @@ public class FirstPersonController : MonoBehaviour
                 if (velocityChange.x != 0 || velocityChange.z != 0)
                 {
                     isSprinting = true;
+                    TocarSomDePassos(true, true);
 
                     if (isCrouched)
                     {
@@ -428,6 +436,7 @@ public class FirstPersonController : MonoBehaviour
             else
             {
                 isSprinting = false;
+                //TocarSomDePassos(true, false);
 
                 if (hideBarWhenFull && sprintRemaining == sprintDuration)
                 {
@@ -437,7 +446,6 @@ public class FirstPersonController : MonoBehaviour
                 targetVelocity = transform.TransformDirection(targetVelocity) * walkSpeed;
 
                 // Apply a force that attempts to reach our target velocity
-                Vector3 velocity = rb.linearVelocity;
                 Vector3 velocityChange = (targetVelocity - velocity);
                 velocityChange.x = Mathf.Clamp(velocityChange.x, -maxVelocityChange, maxVelocityChange);
                 velocityChange.z = Mathf.Clamp(velocityChange.z, -maxVelocityChange, maxVelocityChange);
@@ -533,6 +541,34 @@ public class FirstPersonController : MonoBehaviour
             // Resets when play stops moving
             timer = 0;
             joint.localPosition = new Vector3(Mathf.Lerp(joint.localPosition.x, jointOriginalPos.x, Time.deltaTime * bobSpeed), Mathf.Lerp(joint.localPosition.y, jointOriginalPos.y, Time.deltaTime * bobSpeed), Mathf.Lerp(joint.localPosition.z, jointOriginalPos.z, Time.deltaTime * bobSpeed));
+        }
+    }
+
+    // Atualizado para receber o estado de corrida
+    private void TocarSomDePassos(bool podeTocar, bool correndo)
+    {
+        // 1. Se o jogador deve fazer barulho e o som NÃO está a tocar ainda
+        if (podeTocar && !audioSource.isPlaying)
+        {
+            Debug.Log(audioSource.isPlaying);
+            audioSource.Play();
+            Debug.Log("Som de passo tocando.");
+        }
+        // 2. Se o jogador parou (ou pulou) e o som AINDA está a tocar
+        else if (!podeTocar && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            Debug.Log("Som de passo parado.");
+        }
+
+        // 3. Controlar a velocidade do som (Pitch) se estiver a tocar
+        if (audioSource.isPlaying)
+        {
+            // Define qual deve ser o pitch alvo (normal ou acelerado)
+            float pitchAlvo = correndo ? velocidadeAoCorrer : velocidadeAoAndar;
+
+            // Transição suave para o som não dar um "pulo" bizarro de velocidade
+            audioSource.pitch = Mathf.MoveTowards(audioSource.pitch, pitchAlvo, velocidadeSuavePitch * Time.deltaTime);
         }
     }
 }
@@ -733,6 +769,24 @@ public class FirstPersonController : MonoBehaviour
         fpc.joint = (Transform)EditorGUILayout.ObjectField(new GUIContent("Camera Joint", "Joint object position is moved while head bob is active."), fpc.joint, typeof(Transform), true);
         fpc.bobSpeed = EditorGUILayout.Slider(new GUIContent("Speed", "Determines how often a bob rotation is completed."), fpc.bobSpeed, 1, 20);
         fpc.bobAmount = EditorGUILayout.Vector3Field(new GUIContent("Bob Amount", "Determines the amount the joint moves in both directions on every axes."), fpc.bobAmount);
+        GUI.enabled = true;
+
+        #endregion
+
+        #region Footstep Audio
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+        GUILayout.Label("Footstep Audio", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
+        EditorGUILayout.Space();
+
+        fpc.enableFootstepAudio = EditorGUILayout.ToggleLeft(new GUIContent("Enable Footstep Audio", "Determines if footstep sounds will play while the player is walking."), fpc.enableFootstepAudio);
+
+        GUI.enabled = fpc.enableFootstepAudio;
+        fpc.audioSource = (AudioSource)EditorGUILayout.ObjectField(new GUIContent("Audio Source", "The audio source that will play the footstep sounds."), fpc.audioSource, typeof(AudioSource), true);
+        fpc.velocidadeAoAndar = EditorGUILayout.Slider(new GUIContent("Walk Speed", "Determines the speed of the footstep sounds while walking."), fpc.velocidadeAoAndar, 1f, 2f);
+        fpc.velocidadeAoCorrer = EditorGUILayout.Slider(new GUIContent("Run Speed", "Determines the speed of the footstep sounds while running."), fpc.velocidadeAoCorrer, 1f, 2f);
+        fpc.velocidadeSuavePitch = EditorGUILayout.Slider(new GUIContent("Pitch Adjustment", "Determines the speed of the pitch adjustment."), fpc.velocidadeSuavePitch, 1f, 10f);
         GUI.enabled = true;
 
         #endregion
