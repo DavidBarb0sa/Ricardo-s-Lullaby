@@ -130,6 +130,14 @@ public class FirstPersonController : MonoBehaviour
     private float timer = 0;
 
     #endregion
+    #region Footstep Audio
+
+    [Header("Configurações de Áudio dos Passos")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] clipsDePasso; // Array para colocar vários sons de passos e variar
+    [SerializeField] private float intervaloEntrePassos = 0.5f; // Tempo em segundos entre cada passo
+    
+    #endregion
 
     private void Awake()
     {
