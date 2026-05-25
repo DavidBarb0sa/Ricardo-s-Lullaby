@@ -9,6 +9,8 @@ public class GoalZone : MonoBehaviour
     private HashSet<GameObject> objectsInZone = new HashSet<GameObject>();
     public EnemyControl enemy;
     public float speedIncrease = 0.5f;
+    [Header("Som")]
+    public AudioSource itemSound;
 
     void OnTriggerEnter(Collider other)
     {
@@ -22,7 +24,8 @@ public class GoalZone : MonoBehaviour
                 enemy.GetComponent<NavMeshAgent>().speed += speedIncrease;
 
                 Debug.Log("Objetos na zona: " + objectsInZone.Count);
-
+                if (itemSound != null)
+             itemSound.Play();
                 if (objectsInZone.Count >= requiredObjects)
                 {
                     WinGame();

@@ -8,6 +8,8 @@ public class PhoneCall : MonoBehaviour
 
     [Header("Chamada")]
     public float callDuration = 15f;
+    [Header("Som")]
+    public AudioSource phoneSound;
 
     private bool callActive = false;
     private float callTimer = 0f;
@@ -33,11 +35,24 @@ public class PhoneCall : MonoBehaviour
         callActive = true;
         callTimer = callDuration;
         enemy.GoToPosition(landlinePhone.position);
+
+      
+    if (phoneSound != null)
+    {
+        Debug.Log("A tocar som!");
+        phoneSound.Play();
+    }
+    else
+        Debug.Log("phoneSound é null!");  if (phoneSound != null)
+        phoneSound.Play();
     }
 
     void EndCall()
     {
         callActive = false;
         enemy.ResumeChasing();
+
+        if (phoneSound != null)
+        phoneSound.Stop();
     }
 }
