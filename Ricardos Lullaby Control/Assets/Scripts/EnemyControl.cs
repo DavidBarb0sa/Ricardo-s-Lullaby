@@ -181,6 +181,11 @@ void HandleGameOver()
 
 void GameOver()
 {
+    // 1. Desbloqueia o rato para ele se poder mover livremente
+    Cursor.lockState = CursorLockMode.None;
+
+    // 2. Torna o rato visível outra vez
+    Cursor.visible = true;
     gameOverScreen.SetActive(true);
     Time.timeScale = 0f;
 }
