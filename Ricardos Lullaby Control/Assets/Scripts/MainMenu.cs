@@ -42,7 +42,7 @@ public class MainMenu : MonoBehaviour
     {
         Time.timeScale = 1f;
         Debug.Log("1");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         Debug.Log("2");
         videoPlayer.Stop();
         Debug.Log("3");
@@ -56,7 +56,7 @@ public class MainMenu : MonoBehaviour
 
     public void QuitGame()
     {
-        //Application.Quit();
+        Application.Quit();
         Debug.Log("Quitted game!");
     }
 }
