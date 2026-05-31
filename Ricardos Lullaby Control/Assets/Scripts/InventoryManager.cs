@@ -34,18 +34,12 @@ public class InventoryManager : MonoBehaviour
     {
         if (janelaInventario != null)
         {
-            // Procura o CanvasGroup no pai (PainelInventario) onde ele está
             canvasGrupoInventario = janelaInventario.GetComponentInParent<CanvasGroup>();
-
-            // Se não encontrar no pai, tenta no próprio objeto
             if (canvasGrupoInventario == null)
                 canvasGrupoInventario = janelaInventario.GetComponent<CanvasGroup>();
-
-            // Se ainda não existir, cria no próprio objeto
             if (canvasGrupoInventario == null)
                 canvasGrupoInventario = janelaInventario.AddComponent<CanvasGroup>();
 
-            // Nunca desativar o GameObject — só controlar com CanvasGroup
             janelaInventario.SetActive(true);
             MostrarInventario(false);
         }
@@ -75,11 +69,9 @@ public class InventoryManager : MonoBehaviour
     private void ConfigurarGrelhaInicial()
     {
         if (painelGrelhaEsquerda == null) return;
-
         foreach (Transform slot in painelGrelhaEsquerda)
         {
             slotsOcupados[slot] = null;
-
             RawImage img = slot.GetComponent<RawImage>();
             if (img != null) img.texture = null;
         }
@@ -88,21 +80,15 @@ public class InventoryManager : MonoBehaviour
     public void ApanharEGuardar(ItemData dados, GameObject objetoDaCena)
     {
         Transform slotLivre = EncontrarSlotLivre();
-
         if (slotLivre != null)
         {
             slotsOcupados[slotLivre] = objetoDaCena;
-
             Rigidbody rb = objetoDaCena.GetComponent<Rigidbody>();
             if (rb != null) rb.isKinematic = true;
 
             objetoDaCena.SetActive(true);
-
             SlotInventario scriptSlot = slotLivre.GetComponent<SlotInventario>();
-            if (scriptSlot != null)
-            {
-                scriptSlot.ConfigurarSlot(objetoDaCena, dados);
-            }
+            if (scriptSlot != null) scriptSlot.ConfigurarSlot(objetoDaCena, dados);
 
             FocarObjetoNoEstudio(objetoDaCena, dados);
 
@@ -116,33 +102,23 @@ public class InventoryManager : MonoBehaviour
                 Texture2D fotoDoItem = new Texture2D(rtBase.width, rtBase.height, TextureFormat.RGB24, false);
                 fotoDoItem.ReadPixels(new Rect(0, 0, rtBase.width, rtBase.height), 0, 0);
                 fotoDoItem.Apply();
-
                 RenderTexture.active = null;
 
                 RawImage imagemDoSlot = slotLivre.GetComponent<RawImage>();
-                if (imagemDoSlot != null)
-                {
-                    imagemDoSlot.texture = fotoDoItem;
-                }
+                if (imagemDoSlot != null) imagemDoSlot.texture = fotoDoItem;
             }
 
             objetoDaCena.SetActive(false);
             if (objetoFocado != null && inventarioAberto) objetoFocado.SetActive(true);
-
-            Debug.Log("Objeto guardado e fotografado: " + slotLivre.name);
         }
     }
 
     private Transform EncontrarSlotLivre()
     {
         if (painelGrelhaEsquerda == null) return null;
-
         foreach (Transform slot in painelGrelhaEsquerda)
         {
-            if (slotsOcupados.ContainsKey(slot) && slotsOcupados[slot] == null)
-            {
-                return slot;
-            }
+            if (slotsOcupados.ContainsKey(slot) && slotsOcupados[slot] == null) return slot;
         }
         return null;
     }
@@ -153,9 +129,17 @@ public class InventoryManager : MonoBehaviour
 
         objetoFocado = obj;
 
+        // 1. Guardamos a rotação global atual antes de mudar de pai
+        Quaternion rotacaoOriginal = obj.transform.rotation;
+
+        // 2. Mudamos o pai
         obj.transform.SetParent(pontoSpawnEstudio);
+
+        // 3. Resetamos a posição local para ele ir para o centro, mas mantemos a rotação
         obj.transform.localPosition = Vector3.zero;
-        obj.transform.localRotation = Quaternion.identity;
+
+        // 4. Aplicamos a rotação original que guardamos
+        obj.transform.rotation = rotacaoOriginal;
 
         MudarLayerRecursivamente(obj, LayerMask.NameToLayer("ItemEstudio"));
 
@@ -186,7 +170,6 @@ public class InventoryManager : MonoBehaviour
     public void ToggleInventory()
     {
         inventarioAberto = !inventarioAberto;
-
         MostrarInventario(inventarioAberto);
 
         if (objetoFocado != null)

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8e80b9f53f4d8c7449701d0a74cacc0e, type: 3}
-  m_Name: Dica1
+  m_Name: Carteira
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   nomeItem: Dica
   descricao: 'shhh segredo
