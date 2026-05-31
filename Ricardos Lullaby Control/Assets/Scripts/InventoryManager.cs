@@ -54,7 +54,7 @@ public class InventoryManager : MonoBehaviour
 
     void Update()
     {
-        // Rotação com o rato (funciona mesmo com o jogo pausado)
+        // Apenas rotação manual com o rato
         if (inventarioAberto && objetoFocado != null && Input.GetMouseButton(0))
         {
             float rotX = Input.GetAxis("Mouse X") * velocidadeRotacao * Time.unscaledDeltaTime;
@@ -94,27 +94,62 @@ public class InventoryManager : MonoBehaviour
         Transform slotLivre = EncontrarSlotLivre();
         if (slotLivre != null)
         {
-            Debug.Log("Slot livre encontrado: " + slotLivre.name);
-
             slotsOcupados[slotLivre] = objetoDaCena;
 
-            // 1. Configura o script do Slot
+            Rigidbody rb = objetoDaCena.GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = true;
+
             SlotInventario scriptSlot = slotLivre.GetComponent<SlotInventario>();
             if (scriptSlot != null)
-            {
                 scriptSlot.ConfigurarSlot(objetoDaCena, dados);
-                Debug.Log("Slot configurado com sucesso.");
+            else
+                Debug.LogError("O slot não tem o script SlotInventario!");
+
+            objetoDaCena.SetActive(true);
+
+            // Posiciona no estúdio SEM qualquer rotação
+            objetoDaCena.transform.SetParent(pontoSpawnEstudio);
+            objetoDaCena.transform.localPosition = Vector3.zero;
+            objetoDaCena.transform.localRotation = Quaternion.identity; // rotação a zero para a foto
+
+            MudarLayerRecursivamente(objetoDaCena, LayerMask.NameToLayer("ItemEstudio"));
+
+            if (dados != null)
+            {
+                if (textoNomeItem != null) textoNomeItem.text = dados.nomeItem;
+                if (textoDescricaoItem != null) textoDescricaoItem.text = dados.descricao;
+            }
+
+            // Tira a foto com o item sem rotação
+            if (camEstudio != null && painelItemGrande != null && painelItemGrande.texture != null)
+            {
+                RenderTexture rtBase = (RenderTexture)painelItemGrande.texture;
+                RenderTexture.active = rtBase;
+                camEstudio.targetTexture = rtBase;
+                camEstudio.Render();
+
+                Texture2D fotoDoItem = new Texture2D(rtBase.width, rtBase.height, TextureFormat.RGB24, false);
+                fotoDoItem.ReadPixels(new Rect(0, 0, rtBase.width, rtBase.height), 0, 0);
+                fotoDoItem.Apply();
+
+                RenderTexture.active = null;
+
+                RawImage imagemDoSlot = slotLivre.GetComponent<RawImage>();
+                if (imagemDoSlot != null)
+                    imagemDoSlot.texture = fotoDoItem;
+                else
+                    Debug.LogWarning("O slot não tem RawImage para mostrar a foto!");
             }
             else
             {
-                Debug.LogError("O objeto do slot não tem o script SlotInventario!");
+                Debug.LogWarning("camEstudio ou painelItemGrande não estão configurados — foto não tirada.");
             }
 
-            // 2. Foca no estúdio
-            FocarObjetoNoEstudio(objetoDaCena, dados);
-
-            // Esconde o objeto
+            // Esconde até o inventário abrir
             objetoDaCena.SetActive(false);
+            objetoFocado = objetoDaCena;
+
+            Debug.Log("Objeto guardado e fotografado: " + slotLivre.name);
         }
         else
         {
@@ -139,7 +174,8 @@ public class InventoryManager : MonoBehaviour
 
         obj.transform.SetParent(pontoSpawnEstudio);
         obj.transform.localPosition = Vector3.zero;
-        obj.transform.localRotation = Quaternion.identity;
+        // Mantém a rotação atual do objeto — não repõe para zero ao clicar no slot
+        // assim a rotação manual do jogador é preservada
 
         MudarLayerRecursivamente(obj, LayerMask.NameToLayer("ItemEstudio"));
 
@@ -173,9 +209,7 @@ public class InventoryManager : MonoBehaviour
         MostrarInventario(inventarioAberto);
 
         if (objetoFocado != null)
-        {
             objetoFocado.SetActive(inventarioAberto);
-        }
 
         if (!inventarioAberto)
         {
