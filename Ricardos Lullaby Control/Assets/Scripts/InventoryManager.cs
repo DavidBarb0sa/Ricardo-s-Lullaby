@@ -20,6 +20,9 @@ public class InventoryManager : MonoBehaviour
     public Transform pontoSpawnEstudio;
     public Camera camEstudio;
 
+    [Header("Controlo de Rotação")]
+    public float velocidadeRotacao = 200f;
+
     private Dictionary<Transform, GameObject> slotsOcupados = new Dictionary<Transform, GameObject>();
     private GameObject objetoFocado;
     public bool inventarioAberto = false;
@@ -51,6 +54,16 @@ public class InventoryManager : MonoBehaviour
 
     void Update()
     {
+        // Rotação com o rato (funciona mesmo com o jogo pausado)
+        if (inventarioAberto && objetoFocado != null && Input.GetMouseButton(0))
+        {
+            float rotX = Input.GetAxis("Mouse X") * velocidadeRotacao * Time.unscaledDeltaTime;
+            float rotY = Input.GetAxis("Mouse Y") * velocidadeRotacao * Time.unscaledDeltaTime;
+
+            objetoFocado.transform.Rotate(Vector3.up, -rotX, Space.World);
+            objetoFocado.transform.Rotate(Vector3.right, rotY, Space.World);
+        }
+
         if (Input.GetKeyDown(KeyCode.I))
         {
             ToggleInventory();
@@ -60,7 +73,6 @@ public class InventoryManager : MonoBehaviour
     private void MostrarInventario(bool mostrar)
     {
         if (canvasGrupoInventario == null) return;
-
         canvasGrupoInventario.alpha = mostrar ? 1f : 0f;
         canvasGrupoInventario.interactable = mostrar;
         canvasGrupoInventario.blocksRaycasts = mostrar;
@@ -82,34 +94,31 @@ public class InventoryManager : MonoBehaviour
         Transform slotLivre = EncontrarSlotLivre();
         if (slotLivre != null)
         {
+            Debug.Log("Slot livre encontrado: " + slotLivre.name);
+
             slotsOcupados[slotLivre] = objetoDaCena;
-            Rigidbody rb = objetoDaCena.GetComponent<Rigidbody>();
-            if (rb != null) rb.isKinematic = true;
 
-            objetoDaCena.SetActive(true);
+            // 1. Configura o script do Slot
             SlotInventario scriptSlot = slotLivre.GetComponent<SlotInventario>();
-            if (scriptSlot != null) scriptSlot.ConfigurarSlot(objetoDaCena, dados);
-
-            FocarObjetoNoEstudio(objetoDaCena, dados);
-
-            if (camEstudio != null && painelItemGrande != null && painelItemGrande.texture != null)
+            if (scriptSlot != null)
             {
-                RenderTexture rtBase = (RenderTexture)painelItemGrande.texture;
-                RenderTexture.active = rtBase;
-                camEstudio.targetTexture = rtBase;
-                camEstudio.Render();
-
-                Texture2D fotoDoItem = new Texture2D(rtBase.width, rtBase.height, TextureFormat.RGB24, false);
-                fotoDoItem.ReadPixels(new Rect(0, 0, rtBase.width, rtBase.height), 0, 0);
-                fotoDoItem.Apply();
-                RenderTexture.active = null;
-
-                RawImage imagemDoSlot = slotLivre.GetComponent<RawImage>();
-                if (imagemDoSlot != null) imagemDoSlot.texture = fotoDoItem;
+                scriptSlot.ConfigurarSlot(objetoDaCena, dados);
+                Debug.Log("Slot configurado com sucesso.");
+            }
+            else
+            {
+                Debug.LogError("O objeto do slot não tem o script SlotInventario!");
             }
 
+            // 2. Foca no estúdio
+            FocarObjetoNoEstudio(objetoDaCena, dados);
+
+            // Esconde o objeto
             objetoDaCena.SetActive(false);
-            if (objetoFocado != null && inventarioAberto) objetoFocado.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning("Nenhum slot livre encontrado!");
         }
     }
 
@@ -126,20 +135,11 @@ public class InventoryManager : MonoBehaviour
     public void FocarObjetoNoEstudio(GameObject obj, ItemData dados)
     {
         if (objetoFocado != null) objetoFocado.SetActive(false);
-
         objetoFocado = obj;
 
-        // 1. Guardamos a rotação global atual antes de mudar de pai
-        Quaternion rotacaoOriginal = obj.transform.rotation;
-
-        // 2. Mudamos o pai
         obj.transform.SetParent(pontoSpawnEstudio);
-
-        // 3. Resetamos a posição local para ele ir para o centro, mas mantemos a rotação
         obj.transform.localPosition = Vector3.zero;
-
-        // 4. Aplicamos a rotação original que guardamos
-        obj.transform.rotation = rotacaoOriginal;
+        obj.transform.localRotation = Quaternion.identity;
 
         MudarLayerRecursivamente(obj, LayerMask.NameToLayer("ItemEstudio"));
 
@@ -174,10 +174,7 @@ public class InventoryManager : MonoBehaviour
 
         if (objetoFocado != null)
         {
-            if (objetoFocado != textoNomeItem.gameObject && objetoFocado != textoDescricaoItem.gameObject)
-            {
-                objetoFocado.SetActive(inventarioAberto);
-            }
+            objetoFocado.SetActive(inventarioAberto);
         }
 
         if (!inventarioAberto)
