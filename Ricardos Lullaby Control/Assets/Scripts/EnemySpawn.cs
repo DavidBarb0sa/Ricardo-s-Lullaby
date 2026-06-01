@@ -14,6 +14,10 @@ public class EnemySpawn : MonoBehaviour
     public float minTimeDisappear = 15f;
 
     float disappearTimer = 0f; //Tempo desde a ultima vez que desapareceu
+    public bool canSpawn = false;
+
+    [Header("Som")]
+    public AudioSource spawnSound;
 
     void Start()
     {
@@ -27,6 +31,8 @@ public class EnemySpawn : MonoBehaviour
 
     void Update()
     {
+        if (!canSpawn) return;
+
         disappearTimer += Time.deltaTime;
         if ((!Enemy.activeSelf && Random.Range(0f, 1f) < 0.005f) && disappearTimer > minTimeDisappear)
         {
@@ -54,6 +60,8 @@ public class EnemySpawn : MonoBehaviour
             {
                 Enemy.transform.position = hit.position;
                 Enemy.SetActive(true);
+                if (spawnSound != null)
+                spawnSound.Play();
                 return;
             }
         }
@@ -69,4 +77,10 @@ public class EnemySpawn : MonoBehaviour
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, spawnMinRadius);
     }
+
+    public void EnableSpawn()
+   {
+    canSpawn = true;
+    SpawnEnemy(); 
+   }
 }

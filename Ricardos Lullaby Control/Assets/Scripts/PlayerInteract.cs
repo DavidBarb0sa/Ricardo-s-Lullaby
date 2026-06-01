@@ -114,6 +114,16 @@ public class PlayerInteract : MonoBehaviour
 
         if (itemScript != null && itemScript.dadosDoItem != null)
         {
+              Debug.Log("Item apanhado: " + itemScript.dadosDoItem.nomeItem);
+              if (itemScript.spawnaInimigo && itemScript.enemy != null)
+            {
+                Debug.Log("A tentar spawnar!");
+                EnemySpawn spawnScript = itemScript.enemy.GetComponent<EnemySpawn>();
+                if (spawnScript != null)
+                spawnScript.EnableSpawn();
+                else
+                Debug.Log("EnemySpawn não encontrado no objeto!");
+            }
             if (InventoryManager.Instance != null)
             {
                 // MÁGICA: Passamos os dados do item E o próprio objeto físico (obj) da cena!
