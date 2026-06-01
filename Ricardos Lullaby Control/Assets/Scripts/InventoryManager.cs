@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
@@ -22,6 +23,11 @@ public class InventoryManager : MonoBehaviour
 
     [Header("Controlo de Rotação")]
     public float velocidadeRotacao = 200f;
+
+    [Header("Dica do Inventário")]
+    public TextMeshProUGUI textoDica;
+    public float velocidadeEscritaDica = 0.05f;
+    public float tempoDesaparecerDica = 4f;
 
     private Dictionary<Transform, GameObject> slotsOcupados = new Dictionary<Transform, GameObject>();
     private GameObject objetoFocado;
@@ -54,7 +60,6 @@ public class InventoryManager : MonoBehaviour
 
     void Update()
     {
-        // Apenas rotação manual com o rato
         if (inventarioAberto && objetoFocado != null && Input.GetMouseButton(0))
         {
             float rotX = Input.GetAxis("Mouse X") * velocidadeRotacao * Time.unscaledDeltaTime;
@@ -107,10 +112,9 @@ public class InventoryManager : MonoBehaviour
 
             objetoDaCena.SetActive(true);
 
-            // Posiciona no estúdio SEM qualquer rotação
             objetoDaCena.transform.SetParent(pontoSpawnEstudio);
             objetoDaCena.transform.localPosition = Vector3.zero;
-            objetoDaCena.transform.localRotation = Quaternion.identity; // rotação a zero para a foto
+            objetoDaCena.transform.localRotation = Quaternion.identity;
 
             MudarLayerRecursivamente(objetoDaCena, LayerMask.NameToLayer("ItemEstudio"));
 
@@ -118,9 +122,12 @@ public class InventoryManager : MonoBehaviour
             {
                 if (textoNomeItem != null) textoNomeItem.text = dados.nomeItem;
                 if (textoDescricaoItem != null) textoDescricaoItem.text = dados.descricao;
+
+                // Mostra a dica se o item for a Carteira
+                if (dados.nomeItem == "Dica" && textoDica != null)
+                    StartCoroutine(EscreverDica());
             }
 
-            // Tira a foto com o item sem rotação
             if (camEstudio != null && painelItemGrande != null && painelItemGrande.texture != null)
             {
                 RenderTexture rtBase = (RenderTexture)painelItemGrande.texture;
@@ -145,7 +152,6 @@ public class InventoryManager : MonoBehaviour
                 Debug.LogWarning("camEstudio ou painelItemGrande não estão configurados — foto não tirada.");
             }
 
-            // Esconde até o inventário abrir
             objetoDaCena.SetActive(false);
             objetoFocado = objetoDaCena;
 
@@ -155,6 +161,19 @@ public class InventoryManager : MonoBehaviour
         {
             Debug.LogWarning("Nenhum slot livre encontrado!");
         }
+    }
+
+    private IEnumerator EscreverDica()
+    {
+        string mensagem = "Pressione I para abrir o inventário";
+        textoDica.text = "";
+        foreach (char letra in mensagem)
+        {
+            textoDica.text += letra;
+            yield return new WaitForSeconds(velocidadeEscritaDica);
+        }
+        yield return new WaitForSeconds(tempoDesaparecerDica);
+        textoDica.text = "";
     }
 
     private Transform EncontrarSlotLivre()
@@ -174,8 +193,6 @@ public class InventoryManager : MonoBehaviour
 
         obj.transform.SetParent(pontoSpawnEstudio);
         obj.transform.localPosition = Vector3.zero;
-        // Mantém a rotação atual do objeto — não repõe para zero ao clicar no slot
-        // assim a rotação manual do jogador é preservada
 
         MudarLayerRecursivamente(obj, LayerMask.NameToLayer("ItemEstudio"));
 
