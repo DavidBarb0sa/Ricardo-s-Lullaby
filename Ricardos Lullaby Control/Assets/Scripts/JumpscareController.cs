@@ -6,14 +6,17 @@ public class JumpscareController : MonoBehaviour
     public static JumpscareController Instance;
 
     [Header("Referências")]
-    public Transform inimigoRosto;       // ponto na cara do inimigo (cria um Transform filho no inimigo)
+    public Transform inimigoRosto;
     public Camera cameraPrincipal;
     public GameObject gameOverScreen;
-    public EfeitoEstatica efeitoEstatica; // para desligar a estática durante o jumpscare
+    public EfeitoEstatica efeitoEstatica;
+
+    // 1. ADICIONADO: Referência para o componente de Áudio
+    public AudioSource audioJumpscare;
 
     [Header("Movimento")]
-    public float duracaoMovimento = 2f;  // tempo a ir para a cara do inimigo
-    public float duracaoTremor = 3f;     // tempo a tremer na cara do inimigo
+    public float duracaoMovimento = 2f;
+    public float duracaoTremor = 3f;
     public float intensidadeTremor = 0.05f;
     public float velocidadeTremor = 30f;
 
@@ -33,18 +36,15 @@ public class JumpscareController : MonoBehaviour
 
     private IEnumerator RotinajumpScare()
     {
-        // Desliga a estática imediatamente
         if (efeitoEstatica != null)
         {
             efeitoEstatica.imagemEstatica.gameObject.SetActive(false);
             efeitoEstatica.enabled = false;
         }
 
-        // Desbloqueia o rato e desativa o script de movimento do jogador
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Desativa scripts do jogador para não interferir com a câmara
         if (cameraPrincipal != null)
         {
             MonoBehaviour[] scripts = cameraPrincipal.GetComponentsInParent<MonoBehaviour>();
@@ -57,7 +57,7 @@ public class JumpscareController : MonoBehaviour
         // --- FASE 1: Move a câmara suavemente para a cara do inimigo ---
         Vector3 posicaoInicial = cameraPrincipal.transform.position;
         Quaternion rotacaoInicial = cameraPrincipal.transform.rotation;
-
+        
         float tempo = 0f;
         while (tempo < duracaoMovimento)
         {
@@ -70,16 +70,22 @@ public class JumpscareController : MonoBehaviour
             yield return null;
         }
 
+        if (audioJumpscare != null)
+        {
+            audioJumpscare.Play();
+        }
+
         // --- FASE 2: Tremor na cara do inimigo ---
         Vector3 posicaoFinal = inimigoRosto.position;
         tempo = 0f;
+        
         while (tempo < duracaoTremor)
         {
             tempo += Time.unscaledDeltaTime;
 
             Vector3 tremor = new Vector3(
                 Mathf.Sin(tempo * velocidadeTremor) * intensidadeTremor,
-                Mathf.Cos(tempo * velocidadeTremor * 1.3f) * intensidadeTremor,
+                Mathf.Cos(tempo * velocidadeTremor * 1.3f) * intensidadeTremor, // <- CORRIGIDO AQUI
                 0f
             );
 
@@ -87,6 +93,10 @@ public class JumpscareController : MonoBehaviour
 
             yield return null;
         }
+
+        // Dá 0.1 segundos reais para o motor de som arrancar 
+        // antes de congelarmos o motor físico do jogo
+        yield return new WaitForSecondsRealtime(0.1f);
 
         // --- FIM: Mostra o GameOver ---
         gameOverScreen.SetActive(true);

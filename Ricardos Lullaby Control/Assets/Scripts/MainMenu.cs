@@ -11,6 +11,8 @@ public class MainMenu : MonoBehaviour
     public GameObject playButton;
     public GameObject quitButton;
     public GameObject LoadingScreen;
+    public GameObject menuInterface;
+    public GameObject menuOpcoes;
 
     public void PlayGame()
     {
@@ -41,17 +43,17 @@ public class MainMenu : MonoBehaviour
     private void ChangeScene()
     {
         Time.timeScale = 1f;
-        Debug.Log("1");
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-        Debug.Log("2");
         videoPlayer.Stop();
-        Debug.Log("3");
         videoPlayer.frame = 0;
-        Debug.Log("4");
         videoPlayer.renderMode = VideoRenderMode.RenderTexture;
-        Debug.Log("5");
         videoPlayer.targetTexture.Release();
-        Debug.Log("6");
+    }
+
+    public void Options()
+    {
+        menuInterface.SetActive(false);
+        menuOpcoes.SetActive(true);
     }
 
     public void QuitGame()
