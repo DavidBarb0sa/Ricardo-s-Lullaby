@@ -11,11 +11,9 @@ public class EnemyControl : MonoBehaviour
 
     [Header("Deteção")]
     public float detectionRange = 15f;
-
     public float resumeCooldown = 3f;
     public float maxFreezeDistance = 13f;
     public LayerMask obstacleLayers;
-
     public float minTimeSpawn = 20f;
 
     private NavMeshAgent agent;
@@ -29,15 +27,12 @@ public class EnemyControl : MonoBehaviour
 
     private float touchTimer = 0f;
     private bool isTouchingPlayer = false;
-
-    private float spawnTimer = 0f; //Tempo desde a ultima vez que apareceu
-    
+    private float spawnTimer = 0f;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
 
-        // Tenta encontrar automaticamente o player pela tag
         if (player == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
@@ -45,7 +40,6 @@ public class EnemyControl : MonoBehaviour
             {
                 player = playerObj.transform;
 
-                // Tenta encontrar a camera automaticamente dentro do player
                 if (playerCamera == null)
                 {
                     Camera cam = playerObj.GetComponentInChildren<Camera>();
@@ -68,10 +62,8 @@ public class EnemyControl : MonoBehaviour
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         if (player == null || playerCamera == null) return;
 
-
         if ((PlayerIsLooking() && distanceToPlayer <= maxFreezeDistance))
         {
-            // Para imediatamente
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
             isFrozen = true;
@@ -79,23 +71,20 @@ public class EnemyControl : MonoBehaviour
         }
         else if (isFrozen)
         {
-            // Cooldown antes de voltar a perseguir
             cooldownTimer -= Time.deltaTime;
             if (cooldownTimer <= 0f)
                 isFrozen = false;
         }
         else
         {
-            spawnTimer += Time.deltaTime; //Só conta o tempo de spawn quando está a andar
-            
-            // Persegue o jogador
+            spawnTimer += Time.deltaTime;
+
             if (Vector3.Distance(transform.position, player.position) <= detectionRange)
             {
-
                 agent.isStopped = false;
-                
+
                 if (!isDistracted)
-                agent.SetDestination(player.position);
+                    agent.SetDestination(player.position);
 
                 if (Random.Range(0f, 1f) < 0.0005f && spawnTimer >= minTimeSpawn)
                 {
@@ -104,91 +93,91 @@ public class EnemyControl : MonoBehaviour
             }
             else
             {
-                this.gameObject.SetActive(false); // Desativa o inimigo se o jogador estiver fora do alcance
+                this.gameObject.SetActive(false);
             }
         }
         HandleGameOver();
     }
+
     bool PlayerIsLooking()
-{
-    Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
+    {
+        Vector3 viewportPos = playerCamera.GetComponent<Camera>().WorldToViewportPoint(transform.position);
 
-    // verifica se esta a frente da camera
-    if (viewportPos.z < 0)
-        return false;
+        if (viewportPos.z < 0)
+            return false;
 
-    // margem de erro
-    float margin = 0f; // aumentar margem
-    if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
-        viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
-        return false;
+        float margin = 0f;
+        if (viewportPos.x < 0f - margin || viewportPos.x > 1f + margin ||
+            viewportPos.y < 0f - margin || viewportPos.y > 1f + margin)
+            return false;
 
-    // Verificar se há obstáculos
-    if (Physics.Linecast(playerCamera.position,
-                         transform.position + Vector3.up,
-                         obstacleLayers))
-        return false;
+        if (Physics.Linecast(playerCamera.position,
+                             transform.position + Vector3.up,
+                             obstacleLayers))
+            return false;
 
-    return true;
-}
+        return true;
+    }
 
-    // Gizmos para debug na Scene View
     void OnDrawGizmosSelected()
     {
-        // Alcance de deteção
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
 
         if (!Application.isPlaying || playerCamera == null) return;
 
-        // Linha entre inimigo e câmara
         Gizmos.color = isFrozen ? Color.cyan : Color.red;
         Gizmos.DrawLine(transform.position + Vector3.up, playerCamera.position);
-
-        
-
     }
 
     void OnTriggerStay(Collider collision)
-{
-    if (collision.gameObject.CompareTag("Player"))
     {
-        isTouchingPlayer = true;
+        if (collision.gameObject.CompareTag("Player"))
+            isTouchingPlayer = true;
     }
-}
 
-void OnTriggerExit(Collider collision)
-{
-    if (collision.gameObject.CompareTag("Player"))
+    void OnTriggerExit(Collider collision)
     {
-        isTouchingPlayer = false;
-        touchTimer = 0f; // reset se sair
-    }
-}
-
-void HandleGameOver()
-{
-    if (isTouchingPlayer)
-    {
-        touchTimer += Time.deltaTime;
-
-        if (touchTimer >= killTime)
+        if (collision.gameObject.CompareTag("Player"))
         {
-            GameOver();
+            isTouchingPlayer = false;
+            touchTimer = 0f;
         }
     }
-}
 
-void GameOver()
-{
-    // 1. Desbloqueia o rato para ele se poder mover livremente
-    Cursor.lockState = CursorLockMode.None;
+    void HandleGameOver()
+    {
+        if (isTouchingPlayer)
+        {
+            touchTimer += Time.deltaTime;
 
-    // 2. Torna o rato visível outra vez
-    Cursor.visible = true;
-    gameOverScreen.SetActive(true);
-    Time.timeScale = 0f;
-}
+            if (touchTimer >= killTime)
+            {
+                GameOver();
+            }
+        }
+    }
+
+    void GameOver()
+    {
+        // Chama o jumpscare em vez do GameOver direto
+        if (JumpscareController.Instance != null)
+        {
+            JumpscareController.Instance.IniciarJumpscare();
+        }
+        else
+        {
+            // Fallback se não houver JumpscareController
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            gameOverScreen.SetActive(true);
+            Time.timeScale = 0f;
+        }
+
+        // Evita chamar GameOver múltiplas vezes
+        isTouchingPlayer = false;
+        touchTimer = 0f;
+    }
 
     public void GoToPosition(Vector3 position)
     {
@@ -198,11 +187,10 @@ void GameOver()
         agent.isStopped = false;
         agent.SetDestination(position);
     }
- 
+
     public void ResumeChasing()
     {
         isDistracted = false;
         cooldownTimer = 0f;
     }
 }
-

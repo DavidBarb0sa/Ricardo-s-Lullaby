@@ -35,7 +35,10 @@ public class JumpscareController : MonoBehaviour
     {
         // Desliga a estática imediatamente
         if (efeitoEstatica != null)
+        {
+            efeitoEstatica.imagemEstatica.gameObject.SetActive(false);
             efeitoEstatica.enabled = false;
+        }
 
         // Desbloqueia o rato e desativa o script de movimento do jogador
         Cursor.lockState = CursorLockMode.None;

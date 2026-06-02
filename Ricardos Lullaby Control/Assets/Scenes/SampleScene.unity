@@ -91083,13 +91083,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 976095378}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0.018157696, y: 1.2636987, z: 0.55921495}
+  m_LocalRotation: {x: -0.64408475, y: -0, z: -0, w: 0.7649542}
+  m_LocalPosition: {x: 0.018157696, y: 1.015, z: 0.415}
   m_LocalScale: {x: 0.36313176, y: 0.36313176, z: 0.36313176}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1118420637}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -80.194, y: 0, z: 0}
 --- !u!1 &978000021 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8322378647644347724, guid: 68367f848baddc146b2274bb58e9c8b4, type: 3}
@@ -135322,10 +135322,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 622e02af0614a794b98299c660bad5f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  inimigoRosto: {fileID: 0}
-  cameraPrincipal: {fileID: 0}
-  gameOverScreen: {fileID: 0}
-  efeitoEstatica: {fileID: 0}
+  inimigoRosto: {fileID: 976095379}
+  cameraPrincipal: {fileID: 2036135889}
+  gameOverScreen: {fileID: 1275454220}
+  efeitoEstatica: {fileID: 1584826378}
   duracaoMovimento: 2
   duracaoTremor: 3
   intensidadeTremor: 0.05
@@ -150669,7 +150669,7 @@ MonoBehaviour:
   distanciaMaxima: 15
   distanciaMinima: 2
   alphaMinimo: 0
-  alphaMaximo: 0.85
+  alphaMaximo: 0.65
   velocidadeAnimacao: 0.02
 --- !u!4 &1584826379
 Transform:
@@ -183177,6 +183177,11 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!20 &2036135889 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 772804174963423556, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
+  m_PrefabInstance: {fileID: 2942689374576593586}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2038868910
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -191083,7 +191088,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3632741732201366655, guid: f3bb05b967fa28243aa6d38998964c5e, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4116791398704471749, guid: f3bb05b967fa28243aa6d38998964c5e, type: 3}
       propertyPath: m_LocalPosition.x
