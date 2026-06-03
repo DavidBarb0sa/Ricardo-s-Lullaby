@@ -55,7 +55,11 @@ public class MainMenu : MonoBehaviour
         menuInterface.SetActive(false);
         menuOpcoes.SetActive(true);
     }
-
+    public void Back()
+    {
+        menuOpcoes.SetActive(false);
+        menuInterface.SetActive(true);
+    }
     public void QuitGame()
     {
         //Application.Quit();
