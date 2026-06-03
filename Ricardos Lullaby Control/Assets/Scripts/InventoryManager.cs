@@ -29,6 +29,9 @@ public class InventoryManager : MonoBehaviour
     public float velocidadeEscritaDica = 0.05f;
     public float tempoDesaparecerDica = 4f;
 
+    [Header("Jogador")]
+    public FirstPersonController firstPersonController;
+
     private Dictionary<Transform, GameObject> slotsOcupados = new Dictionary<Transform, GameObject>();
     private GameObject objetoFocado;
     public bool inventarioAberto = false;
@@ -123,7 +126,6 @@ public class InventoryManager : MonoBehaviour
                 if (textoNomeItem != null) textoNomeItem.text = dados.nomeItem;
                 if (textoDescricaoItem != null) textoDescricaoItem.text = dados.descricao;
 
-                // Mostra a dica se o item for a Carteira
                 if (dados.nomeItem == "Dica" && textoDica != null)
                     StartCoroutine(EscreverDica());
             }
@@ -234,12 +236,22 @@ public class InventoryManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             LimparTextos();
+            if (firstPersonController != null)
+            {
+                firstPersonController.cameraCanMove = true;
+                firstPersonController.playerCanMove = true;
+            }
         }
         else
         {
             Time.timeScale = 0f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            if (firstPersonController != null)
+            {
+                firstPersonController.cameraCanMove = false;
+                firstPersonController.playerCanMove = false;
+            }
         }
     }
 }

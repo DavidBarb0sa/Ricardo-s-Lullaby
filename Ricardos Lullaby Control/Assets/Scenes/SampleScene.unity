@@ -59395,6 +59395,17 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &534567280 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 52798325180947753, guid: 18bf7b1741d14294da539b0d7629714d, type: 3}
+  m_PrefabInstance: {fileID: 2942689374576593586}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 122286531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d90ba6530d9bfda47abb4610956b2f44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &537910023
 GameObject:
   m_ObjectHideFlags: 0
@@ -155526,6 +155537,7 @@ MonoBehaviour:
   textoDica: {fileID: 135278558}
   velocidadeEscritaDica: 0.05
   tempoDesaparecerDica: 4
+  firstPersonController: {fileID: 534567280}
   inventarioAberto: 0
 --- !u!4 &1643001669
 Transform:
